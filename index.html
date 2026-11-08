@@ -4,13 +4,19 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gestão Financeira PJ</title>
+  <!-- PWA Meta Tags (PJ) -->
+  <meta name="theme-color" content="#0f172a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Finanças PJ">
+  <link rel="manifest" href="./manifest.json">
   <!-- Tailwind CSS & Chart.js via CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     body { background-color: #f1f5f9; font-family: 'Inter', system-ui, sans-serif; }
-    .tab-active { border-bottom: 3px solid #2563eb; color: #1d4ed8; font-weight: 600; }
+    .tab-active { border-bottom: 3px solid #2563eb; color: #ffffff; font-weight: 600; }
     .loader { border: 3px solid #e2e8f0; border-top: 3px solid #2563eb; border-radius: 50%; width: 22px; height: 22px; animation: spin 0.8s linear infinite; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     button:disabled { opacity: 0.6; cursor: not-allowed; pointer-events: none; }
@@ -32,6 +38,9 @@
       <div class="flex items-center gap-2">
         <input type="month" id="filtroMes" class="bg-slate-800 text-white text-sm rounded-lg px-3 py-2 border border-slate-700 focus:outline-none focus:border-blue-500">
         
+        <button id="btnInstalarPWA" onclick="instalarPWA()" title="Instalar Aplicativo no Dispositivo" class="hidden bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-1.5 shadow-sm transition">
+          <i class="fa-solid fa-download"></i> <span class="hidden sm:inline">Instalar App</span>
+        </button>
         <button onclick="carregarDados()" title="Sincronizar com a Planilha" class="bg-slate-800 hover:bg-slate-700 p-2.5 rounded-lg border border-slate-700 transition">
           <i class="fa-solid fa-rotate"></i>
         </button>
@@ -338,7 +347,6 @@
         <input type="hidden" id="abatIdParcela" value="">
         <input type="hidden" id="abatValorOriginal" value="0">
 
-        <!-- Painel de Simulação de Saldo em Tempo Real -->
         <div class="grid grid-cols-2 gap-3 bg-slate-50 p-3 rounded-lg border border-slate-200">
           <div>
             <span class="block text-xs text-slate-500">Valor Atual da Parcela</span>
@@ -524,7 +532,7 @@
 
     let chartFluxo = null;
     let chartCat = null;
-    let emProcessamento = false; // Trava global contra cliques duplos
+    let emProcessamento = false;
 
     window.addEventListener('DOMContentLoaded', () => {
       const hoje = new Date();
@@ -1180,6 +1188,37 @@
       if (!confirm('Deseja realmente excluir esta categoria da planilha?')) return;
       await enviarPost({ acao: 'excluir_categoria', id: id }, btnEl, '');
     }
+
+    // ================= REGISTRO PWA & BOTÃO DE INSTALAÇÃO =================
+    let eventoInstalacaoPWA = null;
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW falhou:', err));
+      });
+    }
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      eventoInstalacaoPWA = e;
+      const btn = document.getElementById('btnInstalarPWA');
+      if (btn) btn.classList.remove('hidden');
+    });
+
+    async function instalarPWA() {
+      if (!eventoInstalacaoPWA) return;
+      eventoInstalacaoPWA.prompt();
+      const { outcome } = await eventoInstalacaoPWA.userChoice;
+      if (outcome === 'accepted') {
+        document.getElementById('btnInstalarPWA').classList.add('hidden');
+      }
+      eventoInstalacaoPWA = null;
+    }
+
+    window.addEventListener('appinstalled', () => {
+      const btn = document.getElementById('btnInstalarPWA');
+      if (btn) btn.classList.add('hidden');
+    });
   </script>
 </body>
 </html>
