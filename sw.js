@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fin-pj-pwa-v1';
+const CACHE_NAME = 'fin-pj-pwa-v2';
 const ASSETS = [
   './',
   './index.html',
