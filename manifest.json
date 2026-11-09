@@ -1,6 +1,6 @@
 {
-  "name": "Gestão Financeira PJ",
-  "short_name": "Finanças PJ",
+  "name": "Gestão PJ",
+  "short_name": "Gestão PJ",
   "description": "Sistema de Fluxo de Caixa, Contas a Pagar/Receber e Custos Operacionais PJ",
   "start_url": "./index.html",
   "scope": "./",
